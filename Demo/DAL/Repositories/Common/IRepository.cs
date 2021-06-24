@@ -47,18 +47,18 @@ namespace Demo.DAL.Repositories.Common
 
         int Insert(TEntity entity);
 
-        int Insert(IEnumerable<TEntity> entities);
+        void Insert(IEnumerable<TEntity> entities);
 
         Task<int> InsertAsync(TEntity entity);
 
-        Task<int> InsertAsync(IEnumerable<TEntity> entities);
+        void InsertAsync(IEnumerable<TEntity> entities);
 
         int Update(TEntity entity);
 
-        int Update(IEnumerable<TEntity> entities);
+        void Update(IEnumerable<TEntity> entities);
 
         Task<int> UpdateAsync(TEntity entity);
 
-        Task<int> UpdateAsync(IEnumerable<TEntity> entities);
+        void UpdateAsync(IEnumerable<TEntity> entities);
     }
 }

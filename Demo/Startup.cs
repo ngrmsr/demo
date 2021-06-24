@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Demo
 {
@@ -36,7 +37,7 @@ namespace Demo
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
             services.AddOData();
-
+            services.Configure<string>(Configuration.GetSection("ConnectionStrings"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

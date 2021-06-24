@@ -18,6 +18,7 @@ namespace Demo.DAL.DbContexts
         {
 
             modelBuilder.ApplyConfiguration(new EmployeeConfig());
+            
             base.OnModelCreating(modelBuilder); 
         }
         public override int SaveChanges()

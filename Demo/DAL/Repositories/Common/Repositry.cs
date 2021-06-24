@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Demo.DAL.Repositories.Common
@@ -22,69 +23,97 @@ namespace Demo.DAL.Repositories.Common
         }
         public int Count()
         {
-            throw new NotImplementedException();
+            var q = _context.Set<TEntity>().AsNoTracking().Count();
+            return q;
         }
 
         public int Count(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            var q = _context.Set<TEntity>().AsNoTracking().Where(predicate).Count();
+            return q;
         }
 
 
         public Task<int> CountAsync()
         {
-            throw new NotImplementedException();
+            var q = _context.Set<TEntity>().AsNoTracking().CountAsync();
+            return q;
         }
 
         public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            var q = _context.Set<TEntity>().AsNoTracking().Where(predicate).CountAsync();
+            return q;
         }
 
         public int Delete(TEntity entity)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Remove(entity);
+            _context.SaveChanges();
+            _logger.Log(LogLevel.Information, "delete {id}", query.Entity.Id);
+            return query.Entity.Id;
         }
 
         public int Delete(IEnumerable<TEntity> entities)
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().RemoveRange(entities);
+            _context.SaveChanges();
+            _logger.Log(LogLevel.Information, "delete {id}", entities.ToString());
+            return 1;
         }
 
         public int Delete(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Remove(_context.Set<TEntity>().AsNoTracking().FirstOrDefault(predicate));
+            _context.SaveChanges();
+            _logger.Log(LogLevel.Information, "deleted");
+            return query.Entity.Id;
         }
 
         public int DeleteAll()
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().RemoveRange(_context.Set<TEntity>().AsNoTracking());
+            _context.SaveChanges();
+            _logger.Log(LogLevel.Information, "delete all ");
+            return 1;
         }
 
-        public Task<int> DeleteAllAsync()
+        public async Task<int> DeleteAllAsync()
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().RemoveRange(_context.Set<TEntity>().AsNoTracking());
+            await _context.SaveChangesAsync();
+            _logger.Log(LogLevel.Information, "delete all ");
+            return 1;
         }
 
-        public Task<int> DeleteAsync(TEntity entity)
+        public async Task<int> DeleteAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Remove(entity);
+            await _context.SaveChangesAsync();
+            _logger.Log(LogLevel.Information, "deleted {id}");
+            return query.Entity.Id;
         }
 
-        public Task<int> DeleteAsync(IEnumerable<TEntity> entities)
+        public async Task<int> DeleteAsync(IEnumerable<TEntity> entities)
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().RemoveRange(entities);
+            await _context.SaveChangesAsync();
+            _logger.Log(LogLevel.Information, "deleted range");
+            return 1;
         }
 
-        public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> predicate)
+        public async Task<int> DeleteAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Remove(await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(predicate));
+            await _context.SaveChangesAsync();
+            _logger.Log(LogLevel.Information, "deleted");
+            return query.Entity.Id;
         }
 
         public IEnumerable<TEntity> Find(params Expression<Func<TEntity, dynamic>>[] includePaths)
         {
-            var q=_context.Set<TEntity>().AsNoTracking();
-            q = includePaths.Aggregate(q, (current, path) =>  current.Include(path));
+            var q = _context.Set<TEntity>().AsNoTracking();
+            q = includePaths.Aggregate(q, (current, path) => current.Include(path));
             return q.ToList();
         }
 
@@ -102,14 +131,18 @@ namespace Demo.DAL.Repositories.Common
             return await query.ToListAsync();
         }
 
-        public Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, dynamic>>[] includePaths)
+        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, dynamic>>[] includePaths)
         {
-            throw new NotImplementedException();
+            var q = _context.Set<TEntity>().AsNoTracking().Where(predicate);
+            q = includePaths.Aggregate(q, (current, path) => current.Include(path));
+            return await q.ToListAsync();
         }
 
         public TEntity FindOne(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, dynamic>>[] includePaths)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().AsNoTracking().Where(predicate);
+            query = includePaths.Aggregate(query, (current, path) => current.Include(path));
+            return query.FirstOrDefault();
         }
 
         public async Task<TEntity> FindOneAsync(Expression<Func<TEntity, bool>> predicate, params Expression<Func<TEntity, dynamic>>[] includePaths)
@@ -121,42 +154,55 @@ namespace Demo.DAL.Repositories.Common
 
         public int Insert(TEntity entity)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Add(entity);
+            _context.SaveChanges();
+            _logger.Log(LogLevel.Information, "insert {id}", query.Entity.Id);
+            return query.Entity.Id;
         }
 
-        public int Insert(IEnumerable<TEntity> entities)
+        public void Insert(IEnumerable<TEntity> entities)
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().AddRange(entities);
+            _context.SaveChanges();
         }
 
-        public Task<int> InsertAsync(TEntity entity)
+        public async Task<int> InsertAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            var query = await _context.Set<TEntity>().AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return query.Entity.Id;
         }
 
-        public Task<int> InsertAsync(IEnumerable<TEntity> entities)
+        public async void InsertAsync(IEnumerable<TEntity> entities)
         {
-            throw new NotImplementedException();
+            await _context.Set<TEntity>().AddRangeAsync(entities);
+            await _context.SaveChangesAsync();
         }
 
         public int Update(TEntity entity)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Update(entity);
+            _context.SaveChanges();
+            return query.Entity.Id;
         }
 
-        public int Update(IEnumerable<TEntity> entities)
+        public void Update(IEnumerable<TEntity> entities)
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().UpdateRange(entities);
+            _context.SaveChanges();
         }
 
-        public Task<int> UpdateAsync(TEntity entity)
+        public async Task<int> UpdateAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            var query = _context.Set<TEntity>().Update(entity);
+            await _context.SaveChangesAsync();
+            return query.Entity.Id;
         }
 
-        public Task<int> UpdateAsync(IEnumerable<TEntity> entities)
+        public async void UpdateAsync(IEnumerable<TEntity> entities)
         {
-            throw new NotImplementedException();
+            _context.Set<TEntity>().UpdateRange(entities);
+            await _context.SaveChangesAsync();
         }
     }
 }

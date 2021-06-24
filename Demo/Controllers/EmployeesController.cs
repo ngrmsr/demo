@@ -82,5 +82,34 @@ namespace Demo.Controllers
             }
             return Ok(await repository.FindOneAsync(emp => emp.Id == key));
         }
+
+        [HttpDelete]
+        [ProducesResponseType(200, Type = typeof(Employee))]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        public async Task<IActionResult> Delete([FromODataUri] int key, [FromBody] Employee employee)
+        {
+            try
+            {
+                if (employee == null)
+                {
+                    return Unauthorized();
+                }
+                if (!key.Equals(employee.Id))
+                {
+                    return BadRequest();
+                }
+                await repository.DeleteAsync(employee);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (await repository.FindOneAsync(emp => emp.Id == key) == null)
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+            return Ok(await repository.FindOneAsync(emp => emp.Id == key));
+        }
     }
 }
